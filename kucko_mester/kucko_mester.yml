@@ -23,39 +23,34 @@ uart:
 
 binary_sensor:
   - platform: gpio
+    id: press_1
     on_press:
       then:
-        - cover.template.publish:
-            id: gate
-            state: OPEN  
-            current_operation: OPENING  
+        - switch.toggle: open_gate
     pin:
       number: GPIO0
       mode: INPUT_PULLUP
       inverted: True
-    name: "Open Gate"
   - platform: gpio
+    id: press_2
     on_press:
       then:
-        - switch.toggle: button_2
+        - switch.toggle: open_pedestrian
     pin:
       number: GPIO9
       mode: INPUT_PULLUP
       inverted: True
-    name: "Open Gate Pedestrian"
   - platform: gpio
+    id: press_3
     on_press:
       then:
-        - cover.template.publish:
-            id: gate
-            state: CLOSED
-            current_operation: CLOSING
+        - switch.toggle: gate_close
     pin:
       number: GPIO10
       mode: INPUT_PULLUP
       inverted: True
-    name: "Close Gate"
   - platform: gpio
+    id: press_4
     on_press:
       then:
         - switch.toggle: button_4
@@ -63,26 +58,53 @@ binary_sensor:
       number: GPIO14
       mode: INPUT_PULLUP
       inverted: True
-    name: "Open Door"
   - platform: status
     name: "Kucko Mester Status"
 
 switch:
   - platform: gpio
-    id: button_1
-    name: "Open Gate"
+    id: relay_1
     pin: GPIO12
+    restore_mode: ALWAYS_OFF
+    interlock: [relay_2, relay_3]  
+  - platform: template
+    id: open_gate
+    name: "Gate Open"
+    icon: "mdi:gate"
+    turn_on_action:
+      - switch.turn_on: relay_1
+      - delay: 300ms
+      - switch.turn_off: relay_1   
   - platform: gpio
-    id: button_2
-    name: "Open Gate Pedestrian"
+    id: relay_2
     pin: GPIO5
+    restore_mode: ALWAYS_OFF
+    interlock: [relay_1, relay_3]  
+  - platform: template
+    id: open_pedestrian
+    name: "Gate Pedestrian"
+    icon: "mdi:gate"
+    turn_on_action:
+      - switch.turn_on: relay_2
+      - delay: 300ms
+      - switch.turn_off: relay_2
   - platform: gpio
-    id: button_3
-    name: "Close Gate"
+    id: relay_3
     pin: GPIO4
+    restore_mode: ALWAYS_OFF
+    interlock: [relay_1, relay_2]  
+  - platform: template
+    id: gate_close
+    name: "Gate Close"
+    icon: "mdi:gate"
+    turn_on_action:
+      - switch.turn_on: relay_3
+      - delay: 300ms
+      - switch.turn_off: relay_3
   - platform: gpio
     id: button_4
-    name: "Open Door"
+    name: "Kucko ajto"
+    icon: "mdi:lock" 
     pin: GPIO15
 
 output:
@@ -97,29 +119,11 @@ light:
     name: "Sonoff 4CH Blue LED"
     output: blue_led
 
-cover: 
-  - platform: template
-    id: "gate"
-    name: "Gate"
-    open_action:
-      # Cancel any previous action
-      - switch.turn_off: button_3
-      # Turn the OPEN switch on briefly
-      - switch.turn_on: button_1
-      - delay: 0.1s
-      - switch.turn_off: button_1
-    close_action:
-      - switch.turn_off: button_1
-      - switch.turn_off: button_2
-      - switch.turn_on: button_3
-      - delay: 0.1s
-      - switch.turn_off: button_3
-    optimistic: true
-    assumed_state: true    
-
 ota:
   safe_mode: True
   password: !secret ota_password
 
-web_server:
-  port: 80    
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal Kucko"
+    update_interval: 60s    
