@@ -73,7 +73,7 @@ switch:
     icon: "mdi:gate"
     turn_on_action:
       - switch.turn_on: relay_1
-      - delay: 300ms
+      - delay: 500ms
       - switch.turn_off: relay_1   
   - platform: gpio
     id: relay_2
@@ -86,7 +86,7 @@ switch:
     icon: "mdi:gate"
     turn_on_action:
       - switch.turn_on: relay_2
-      - delay: 300ms
+      - delay: 500ms
       - switch.turn_off: relay_2
   - platform: gpio
     id: relay_3
@@ -99,7 +99,7 @@ switch:
     icon: "mdi:gate"
     turn_on_action:
       - switch.turn_on: relay_3
-      - delay: 300ms
+      - delay: 500ms
       - switch.turn_off: relay_3
   - platform: gpio
     id: button_4
