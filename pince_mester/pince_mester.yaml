@@ -21,8 +21,6 @@ wifi:
   password: !secret wifi_password
 
 
-captive_portal:
-
 # Enable logging
 logger:
 
@@ -114,3 +112,8 @@ switch:
       number: GPIO22
       inverted: true   
     restore_mode: RESTORE_DEFAULT_OFF    
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal Kucko"
+    update_interval: 60s    
