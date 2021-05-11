@@ -3,117 +3,235 @@ esphome:
   platform: ESP32
   board: nodemcu-32s
   on_boot:
-      - switch.turn_off: relay_1
-      - switch.turn_off: relay_2
-      - switch.turn_off: relay_3
-      - switch.turn_off: relay_4
-      - switch.turn_off: relay_5
-      - switch.turn_off: relay_6
-      - switch.turn_off: relay_7
-      - switch.turn_off: relay_8
-      - switch.turn_on: led_1
-      - delay: 2s  
-      - switch.turn_off: led_1
-      - delay: 1s  
+    priority: -100
+    then:
+      - switch.turn_on: led_wifi
 
 wifi:
+  fast_connect: true
+  output_power: 20db  
   ssid: !secret wifi_ssid
   password: !secret wifi_password
 
 
+script:
+    - id: stop_all 
+      then: 
+        - switch.turn_off: relay_hatul
+        - switch.turn_off: relay_elol
+        - switch.turn_off: relay_grup
+        - switch.turn_off: relay_cserep
+        - switch.turn_off: relay_kert
+    - id: start_watter 
+      then:  
+        - if:
+            condition:
+               - switch.is_on: use_tank
+            then:
+               - switch.turn_off: relay_vezetek
+               - switch.turn_on: relay_pompa
+            else: 
+               - switch.turn_off: relay_pompa
+               - switch.turn_on: relay_vezetek
+          
 # Enable logging
 logger:
 
 # Enable Home Assistant API
 api:
 
+status_led:
+  pin: GPIO02
+
 ota:
   safe_mode: True
   password: !secret ota_password
 
-binary_sensor:
-  - platform: gpio
-    pin: 
-      number: GPIO21
-      mode: INPUT_PULLUP
-    id: button_1
-    on_press:
-      then:
-        - switch.toggle: led_1
-        - delay: 2s  
-        - switch.toggle: led_1
-#        - delay: 500ms  
-#        - switch.toggle: relay_1
-#        - delay: 500ms  
-#        - switch.toggle: relay_2
-#        - delay: 500ms  
-#        - switch.toggle: relay_3
-#        - delay: 500ms  
-#        - switch.toggle: relay_4
-#        - delay: 500ms  
-#        - switch.toggle: relay_5
-#        - delay: 500ms  
-#        - switch.toggle: relay_6
-#        - delay: 500ms  
-#        - switch.toggle: relay_7
-#        - delay: 500ms  
-#        - switch.toggle: relay_8
-
 switch:
-  - id: led_1
+  - id: use_tank
+    icon: "mdi:water-pump"
+    name: "Van viz a tartalyban?" 
     platform: gpio
     pin: 
-      number: GPIO13
-  - id: relay_1
+      number: GPIO4
+  - id: led_wifi
     platform: gpio
     pin: 
-      number: GPIO12
+      number: GPIO0
+    restore_mode: ALWAYS_OFF    
+  - id: relay_hatul
+    platform: gpio
+    pin: 
+      number: GPIO23
       inverted: true   
-    restore_mode: RESTORE_DEFAULT_OFF    
-  - id: relay_2
-    platform: gpio
-    pin: 
-      number: GPIO14
-      inverted: true   
-    restore_mode: RESTORE_DEFAULT_OFF    
-  - id: relay_3
-    platform: gpio
-    pin: 
-      number: GPIO27
-      inverted: true   
-    restore_mode: RESTORE_DEFAULT_OFF    
-  - id: relay_4
-    platform: gpio
-    pin: 
-      number: GPIO26
-      inverted: true   
-    restore_mode: RESTORE_DEFAULT_OFF    
-  - id: relay_5
-    platform: gpio
-    pin: 
-      number: GPIO25
-      inverted: true   
-    restore_mode: RESTORE_DEFAULT_OFF    
-  - id: relay_6
-    platform: gpio
-    pin: 
-      number: GPIO33
-      inverted: true   
-    restore_mode: RESTORE_DEFAULT_OFF    
-  - id: relay_7
-    platform: gpio
-    pin: 
-      number: GPIO32
-      inverted: true   
-    restore_mode: RESTORE_DEFAULT_OFF    
-  - id: relay_8
+    restore_mode: ALWAYS_OFF    
+  - id: relay_elol
     platform: gpio
     pin: 
       number: GPIO22
       inverted: true   
-    restore_mode: RESTORE_DEFAULT_OFF    
+    restore_mode: ALWAYS_OFF    
+  - id: relay_grup
+    platform: gpio
+    pin: 
+      number: GPIO21
+      inverted: true   
+    restore_mode: ALWAYS_OFF    
+  - id: relay_cserep
+    platform: gpio
+    pin: 
+      number: GPIO19
+      inverted: true   
+    restore_mode: ALWAYS_OFF    
+  - id: relay_kert
+    platform: gpio
+    pin: 
+      number: GPIO18
+      inverted: true   
+    restore_mode: ALWAYS_OFF    
+  - id: relay_pompa
+    platform: gpio
+    pin: 
+      number: GPIO5
+      inverted: true   
+    restore_mode: ALWAYS_OFF    
+  - id: relay_vezetek
+    platform: gpio
+    pin: 
+      number: GPIO17
+      inverted: true   
+    restore_mode: ALWAYS_OFF    
+  - id: relay_ajto
+    name: "pince ajto"
+    platform: gpio
+    icon: "mdi:lock" 
+    pin: 
+      number: GPIO16
+      inverted: true   
+  - id: circuit_1
+    name: "fu ontozo elol"
+    platform: gpio
+    icon: "mdi:sprinkler-variant"  
+    pin: 
+      number: GPIO13
+    restore_mode: ALWAYS_OFF 
+    interlock: 
+      - circuit_2  
+      - circuit_3  
+      - circuit_4
+      - circuit_5
+    on_turn_on:    
+      - script.execute: stop_all
+      - script.execute: start_watter
+      - switch.turn_on: relay_elol
+      - delay: 15min
+      - switch.turn_off: relay_elol
+      - switch.turn_off: circuit_5
+    on_turn_off:
+      - switch.turn_off: relay_elol
+  - id: circuit_2
+    name: "fu ontozo hatul"
+    icon: "mdi:sprinkler-variant"  
+    platform: gpio
+    pin: 
+      number: GPIO15
+    restore_mode: ALWAYS_OFF    
+    interlock: 
+      - circuit_1  
+      - circuit_3  
+      - circuit_4
+      - circuit_5  
+    on_turn_on:    
+      - script.execute: stop_all
+      - script.execute: start_watter
+      - switch.turn_on: relay_hatul
+      - delay: 15min 
+      - switch.turn_off: relay_hatul
+      - switch.turn_off: circuit_5
+    on_turn_off:
+      - switch.turn_off: relay_hatul
+  - id: circuit_3
+    name: "Grup csepi"
+    icon: "mdi:watering-can"  
+    platform: gpio
+    pin: 
+      number: GPIO14
+    restore_mode: ALWAYS_OFF    
+    interlock: 
+      - circuit_2  
+      - circuit_1  
+      - circuit_4
+      - circuit_5  
+    on_turn_on:    
+      - script.execute: stop_all
+      - script.execute: start_watter
+      - switch.turn_on: relay_grup
+      - delay: 15min  
+      - switch.turn_off: relay_grup
+      - switch.turn_off: circuit_5
+    on_turn_off:
+      - switch.turn_off: relay_grup
+  - id: circuit_4
+    name: "Cherep csepi"
+    icon: "mdi:watering-can"  
+    platform: gpio
+    pin: 
+      number: GPIO12
+    restore_mode: ALWAYS_OFF    
+    interlock: 
+      - circuit_2  
+      - circuit_3  
+      - circuit_1
+      - circuit_5  
+    on_turn_on:    
+      - script.execute: stop_all
+      - script.execute: start_watter
+      - switch.turn_on: relay_cserep
+      - delay: 10min  
+      - switch.turn_off: relay_cserep
+      - switch.turn_off: circuit_5
+    on_turn_off:
+      - switch.turn_off: relay_cserep
+  - id: circuit_5
+    name: "Kert ontozo"
+    icon: "mdi:watering-can"  
+    platform: gpio
+    pin: 
+      number: GPIO27
+    restore_mode: ALWAYS_OFF    
+    interlock: 
+      - circuit_2  
+      - circuit_3  
+      - circuit_4
+      - circuit_1  
+    on_turn_on:    
+      - script.execute: stop_all
+      - script.execute: start_watter
+      - switch.turn_on: relay_kert
+      - delay: 30min 
+      - switch.turn_off: relay_kert
+      - switch.turn_off: circuit_5
+    on_turn_off:
+      - switch.turn_off: relay_kert
 
 sensor:
   - platform: wifi_signal
-    name: "WiFi Signal Kucko"
+    name: "WiFi Signal Pince"
+    icon: "mdi:wifi"
+    update_interval: 60s    
+  # First Cable terminal ( from esb USB port)     
+  - platform: adc
+    pin: GPIO34
+    icon: "mdi:battery-medium"
+    # measure 0 to 3.9v   
+    attenuation: 11db  
+    name: "Water Tank Level" 
+    update_interval: 30s  
+  - platform: dht
+    pin: GPIO32
+    temperature:
+      name: "Pince Temperature"
+    humidity:
+      name: "Pince Humidity"
+    model: AM2302
     update_interval: 60s    
