@@ -9,6 +9,7 @@ esphome:
 
 wifi:
   fast_connect: true
+  power_save_mode: none  
   output_power: 20db  
   ssid: !secret wifi_ssid
   password: !secret wifi_password
@@ -126,7 +127,7 @@ switch:
       - switch.turn_on: relay_elol
       - delay: 15min
       - switch.turn_off: relay_elol
-      - switch.turn_off: circuit_5
+      - switch.turn_off: circuit_1
     on_turn_off:
       - switch.turn_off: relay_elol
   - id: circuit_2
@@ -147,7 +148,7 @@ switch:
       - switch.turn_on: relay_hatul
       - delay: 15min 
       - switch.turn_off: relay_hatul
-      - switch.turn_off: circuit_5
+      - switch.turn_off: circuit_2
     on_turn_off:
       - switch.turn_off: relay_hatul
   - id: circuit_3
@@ -166,9 +167,9 @@ switch:
       - script.execute: stop_all
       - script.execute: start_watter
       - switch.turn_on: relay_grup
-      - delay: 15min  
+      - delay: 30min  
       - switch.turn_off: relay_grup
-      - switch.turn_off: circuit_5
+      - switch.turn_off: circuit_3
     on_turn_off:
       - switch.turn_off: relay_grup
   - id: circuit_4
@@ -189,7 +190,7 @@ switch:
       - switch.turn_on: relay_cserep
       - delay: 10min  
       - switch.turn_off: relay_cserep
-      - switch.turn_off: circuit_5
+      - switch.turn_off: circuit_4
     on_turn_off:
       - switch.turn_off: relay_cserep
   - id: circuit_5
@@ -223,10 +224,24 @@ sensor:
   - platform: adc
     pin: GPIO34
     icon: "mdi:battery-medium"
-    # measure 0 to 3.9v   
-    attenuation: 11db  
+    attenuation: 6db  
     name: "Water Tank Level" 
-    update_interval: 30s  
+    update_interval: 6s  
+    unit_of_measurement: "cm"
+    accuracy_decimals: 0
+    filters: 
+      - sliding_window_moving_average:
+          window_size: 20
+          send_every: 10
+      - calibrate_linear:
+          - 0.538 -> 0
+          - 0.620 -> 20
+          - 0.703 -> 40
+          - 0.812 -> 60
+          - 0.902 -> 80
+          - 0.998 -> 00
+          - 1.240 -> 150
+          - 1.485 -> 200
   - platform: dht
     pin: GPIO32
     temperature:
