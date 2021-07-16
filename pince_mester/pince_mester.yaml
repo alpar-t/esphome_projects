@@ -91,6 +91,8 @@ switch:
       inverted: true   
     restore_mode: ALWAYS_OFF    
   - id: relay_pompa
+    name: "Pompa"
+    icon: "mdi:water-pump"
     platform: gpio
     pin: 
       number: GPIO5
@@ -125,7 +127,7 @@ switch:
       - script.execute: stop_all
       - script.execute: start_watter
       - switch.turn_on: relay_elol
-      - delay: 15min
+      - delay: 30min
       - switch.turn_off: relay_elol
       - switch.turn_off: circuit_1
     on_turn_off:
@@ -146,7 +148,7 @@ switch:
       - script.execute: stop_all
       - script.execute: start_watter
       - switch.turn_on: relay_hatul
-      - delay: 15min 
+      - delay: 30min 
       - switch.turn_off: relay_hatul
       - switch.turn_off: circuit_2
     on_turn_off:
@@ -167,7 +169,7 @@ switch:
       - script.execute: stop_all
       - script.execute: start_watter
       - switch.turn_on: relay_grup
-      - delay: 30min  
+      - delay: 60min  
       - switch.turn_off: relay_grup
       - switch.turn_off: circuit_3
     on_turn_off:
@@ -188,7 +190,7 @@ switch:
       - script.execute: stop_all
       - script.execute: start_watter
       - switch.turn_on: relay_cserep
-      - delay: 10min  
+      - delay: 30min  
       - switch.turn_off: relay_cserep
       - switch.turn_off: circuit_4
     on_turn_off:
@@ -209,7 +211,7 @@ switch:
       - script.execute: stop_all
       - script.execute: start_watter
       - switch.turn_on: relay_kert
-      - delay: 30min 
+      - delay: 60min 
       - switch.turn_off: relay_kert
       - switch.turn_off: circuit_5
     on_turn_off:
@@ -226,13 +228,17 @@ sensor:
     icon: "mdi:battery-medium"
     attenuation: 6db  
     name: "Water Tank Level" 
-    update_interval: 6s  
+    update_interval: 2s  
     unit_of_measurement: "cm"
     accuracy_decimals: 0
     filters: 
       - sliding_window_moving_average:
-          window_size: 20
-          send_every: 10
+          window_size: 60
+          send_every: 20            
+            #- median:
+            #window_size: 7
+            #send_every: 4
+            #send_first_at: 3      
       - calibrate_linear:
           - 0.538 -> 0
           - 0.620 -> 20
@@ -242,6 +248,15 @@ sensor:
           - 0.998 -> 00
           - 1.240 -> 150
           - 1.485 -> 200
+    on_value_range:
+      #- above: 100
+      #  then:
+      #    - switch.turn_on: use_tank
+      - below: 70
+        then:
+          - switch.turn_off: use_tank
+          - switch.turn_off: relay_pompa
+          - script.execute:  stop_all
   - platform: dht
     pin: GPIO32
     temperature:
@@ -249,4 +264,4 @@ sensor:
     humidity:
       name: "Pince Humidity"
     model: AM2302
-    update_interval: 60s    
+    update_interval: 300s    
