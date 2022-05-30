@@ -226,37 +226,37 @@ sensor:
   - platform: adc
     pin: GPIO34
     icon: "mdi:battery-medium"
-    attenuation: 6db  
+    attenuation: 11db 
     name: "Water Tank Level" 
-    update_interval: 2s  
-    unit_of_measurement: "cm"
-    accuracy_decimals: 0
-    filters: 
-      - sliding_window_moving_average:
-          window_size: 60
-          send_every: 20            
-            #- median:
-            #window_size: 7
-            #send_every: 4
-            #send_first_at: 3      
-      - calibrate_linear:
-          - 0.538 -> 0
-          - 0.620 -> 20
-          - 0.703 -> 40
-          - 0.812 -> 60
-          - 0.902 -> 80
-          - 0.998 -> 00
-          - 1.240 -> 150
-          - 1.485 -> 200
-    on_value_range:
+    update_interval: 1s  
+    #unit_of_measurement: "cm"
+    #accuracy_decimals: 0
+    #filters: 
+      #- sliding_window_moving_average:
+      #    window_size: 60
+      #    send_every: 20            
+      #- median:
+      #    window_size: 7
+      #    send_every: 4
+      #    send_first_at: 3      
+      #- calibrate_linear:
+      #    - 0.538 -> 0
+      #    - 0.620 -> 20
+      #    - 0.703 -> 40
+      #    - 0.812 -> 60
+      #    - 0.902 -> 80
+      #    - 0.998 -> 00
+      #    - 1.240 -> 150
+      #    - 1.485 -> 200
+    #on_value_range:
       #- above: 100
       #  then:
       #    - switch.turn_on: use_tank
-      - below: 70
-        then:
-          - switch.turn_off: use_tank
-          - switch.turn_off: relay_pompa
-          - script.execute:  stop_all
+      #- below: 70
+      #  then:
+      #    - switch.turn_off: use_tank
+      #    - switch.turn_off: relay_pompa
+      #    - script.execute:  stop_all
   - platform: dht
     pin: GPIO32
     temperature:
