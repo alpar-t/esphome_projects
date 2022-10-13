@@ -17,9 +17,6 @@ wifi:
 
 api:
 
-web_server:
-  port: 80
-
 ota:
   safe_mode: True
   password: !secret ota_password
@@ -66,22 +63,52 @@ binary_sensor:
 
 switch:
   - platform: gpio
+    id: fu_hatul
     name: "Ontozes Fu hatul"
     pin: GPIO12
+    interlock:
+      - fu_elol
+      - gruppok
+      - cserep_csepi
+      - vetemenyes
   - platform: gpio
+    id: fu_elol
     name: "Ontozes Fu elol"
     pin: GPIO5
+    interlock:
+      - fu_hatul
+      - gruppok
+      - cserep_csepi
+      - vetemenyes
   - platform: gpio
+    id: gruppok
     name: "Ontozes Gruppok"
     pin: GPIO4
+    interlock:
+      - fu_hatul
+      - fu_elol
+      - cserep_csepi
+      - vetemenyes
   - platform: gpio
+    id: cserep_csepi
     name: "Ontozes Cserep Csepi"
+    interlock:
+      - fu_hatul
+      - fu_elol
+      - gruppok
+      - vetemenyes
     pin: GPIO15
   - platform: gpio
     name: "EXTRA 2"
     pin: GPIO3
     inverted: true
   - platform: gpio
+    id: vetemenyes
+    interlock:
+      - fu_hatul
+      - fu_elol
+      - gruppok
+      - cserep_csepi
     name: "Ontozes Vetemenyes"
     pin: GPIO1
     inverted: true

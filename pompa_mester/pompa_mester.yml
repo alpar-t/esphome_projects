@@ -78,13 +78,15 @@ binary_sensor:
 
 switch:
   - platform: gpio
-    name: "Ontozes Pomparol"
     pin: GPIO12
     id: ontozes_pompa
+    interlock: 
+       - ontozes_vezetek
   - platform: gpio
-    name: "Ontozoes Vezetekrol"
     pin: GPIO5
     id: ontozes_vezetek
+    interlock: 
+       - ontozes_pompa
   - platform: gpio
     name: "Urito Pompa"
     pin: GPIO4
@@ -93,7 +95,31 @@ switch:
     name: "Pince Ajto"
     pin: GPIO15
     id: pince_ajto
-
+  - platform: template
+    id: use_tank
+    optimistic: true 
+    icon: "mdi:water-pump"
+    name: "Van viz a tartalyban?"
+  - platform: template
+    id: water_flow
+    icon: "mdi:water-pump"
+    name: "Viz inditasa"
+    optimistic: true
+    turn_on_action:
+       then:  
+          - if:
+               condition:
+                 - switch.is_on: use_tank
+               then:
+                 - switch.turn_on: ontozes_pompa
+               else:
+                 - switch.turn_on: ontozes_vezetek
+          # This is a failsafe for how long the water will run for max
+          - delay: 45 minutes
+          - switch.turn_off: water_flow
+    turn_off_action:
+      - switch.turn_off: ontozes_vezetek   
+      - switch.turn_off: ontozes_pompa 
 
 output:
   # Register the blue LED as a dimmable output ....
@@ -119,5 +145,5 @@ sensor:
     humidity:
       name: "Pince Humidity"
     model: AM2302
-    update_interval: 300s   
+    update_interval: 60s   
 
