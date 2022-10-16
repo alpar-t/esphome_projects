@@ -34,26 +34,118 @@ ads1115:
   - address: 0x48
 
 sensor:
+  - platform: dht
+    pin: GPIO2
+    temperature:
+      name: "Technical Room Temperature"
+    humidity:
+      name: "Technical Room Humidity"
+    model: AM2302
+    update_interval: 30s
+
   - platform: ads1115
     multiplexer: 'A0_GND'
     id: voltage_sensor_0
     gain: 6.144
     update_interval: 30s
-
   - platform: resistance
     sensor: voltage_sensor_0
     configuration: UPSTREAM
     resistor: 10kOhm
     reference_voltage: 5
     id: resistance_sensor_0
-
   - platform: ntc
     sensor: resistance_sensor_0
-    name: "Temp 0"
+    name: "Hot Water Circuit Temp"
+    id: hot_water_circuit_temp
     calibration:
        - 10.0kOhm -> 25°C
-       - 24.97kOhm -> 5.3°C
-       - 14.82kOhm -> 15.9°C
+       - 4.76kOhm -> 38.8°C
+       - 16.09kOhm -> 14.2°C
+    filters:
+      - sliding_window_moving_average:
+          window_size: 6
+          send_every: 2
+
+  - platform: ads1115
+    multiplexer: 'A1_GND'
+    id: voltage_sensor_1
+    gain: 6.144
+    update_interval: 30s
+  - platform: resistance
+    sensor: voltage_sensor_1
+    configuration: UPSTREAM
+    resistor: 10kOhm
+    reference_voltage: 5
+    id: resistance_sensor_1
+  - platform: ntc
+    sensor: resistance_sensor_1
+    name: "Heating Outgress Temp"
+    id: heating_outgress_temp
+    calibration:
+       - 10.0kOhm -> 25°C
+       - 5.62kOhm -> 38.1°C
+       - 15.96kOhm -> 14.1°C
+    filters:
+      - sliding_window_moving_average:
+          window_size: 6
+          send_every: 2
+
+  - platform: ads1115
+    multiplexer: 'A2_GND'
+    id: voltage_sensor_2
+    gain: 6.144
+    update_interval: 30s
+  - platform: resistance
+    sensor: voltage_sensor_2
+    configuration: UPSTREAM
+    resistor: 10kOhm
+    reference_voltage: 5
+    id: resistance_sensor_2
+  - platform: ntc
+    sensor: resistance_sensor_2
+    name: "Heating Ingress"
+    id: heating_ingress_temp
+    calibration:
+       - 10.0kOhm -> 25°C
+       - 5.60kOhm -> 38.6°C
+       - 15.92kOhm -> 14.1°C
+    filters:
+      - sliding_window_moving_average:
+          window_size: 6
+          send_every: 2
+
+  - platform: ads1115
+    multiplexer: 'A3_GND'
+    id: voltage_sensor_3
+    gain: 6.144
+    update_interval: 30s
+  - platform: resistance
+    sensor: voltage_sensor_3
+    configuration: UPSTREAM
+    resistor: 10kOhm
+    reference_voltage: 5
+    id: resistance_sensor_3
+  - platform: ntc
+    sensor: resistance_sensor_3
+    name: "Hot water reserve"
+    id: water_reserve_temp
+    calibration:
+       - 10.0kOhm -> 25°C
+       - 5.76kOhm -> 37.9°C
+       - 15.98kOhm -> 14.1°C
+    filters:
+      - sliding_window_moving_average:
+          window_size: 6
+          send_every: 2
+
+  - platform: template
+    name: "Heating Water Delta Temp"
+    lambda: |-
+        return id(heating_outgress_temp).state - id(heating_ingress_temp).state;
+    update_interval: 10s
+    device_class: temperature
+    unit_of_measurement: C
 
 # Four relay outputs, exposed as switches in Home Assistant
 switch:
@@ -87,5 +179,5 @@ switch:
     id: relay7
   - platform: gpio
     pin: GPIO05
-    name: Relay8
+    name: "Hot Water Pump"
     id: relay8
