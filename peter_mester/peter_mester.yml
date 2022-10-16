@@ -33,6 +33,12 @@ i2c:
 ads1115:
   - address: 0x48
 
+globals:
+  - id: is_hot_water_circulation_on
+    type: boolean
+    restore_value: yes
+    initial_value: "false" 
+
 sensor:
   - platform: dht
     pin: GPIO2
@@ -66,6 +72,18 @@ sensor:
       - sliding_window_moving_average:
           window_size: 6
           send_every: 2
+    on_value_range:
+      - below: 34.0
+        then:
+          - if:
+              condition:
+                 lambda: |-
+                    return id(is_hot_water_circulation_on);
+              then:               
+                 - switch.turn_on: relay8
+      - above: 39.0
+        then:
+          - switch.turn_off: relay8
 
   - platform: ads1115
     multiplexer: 'A1_GND'
@@ -181,3 +199,16 @@ switch:
     pin: GPIO05
     name: "Hot Water Pump"
     id: relay8
+  - platform: template
+    id: "hot_water_circulation"
+    name: "Hot Water Circulation"
+    icon: "mdi:pump"
+    lambda: |-
+      return id(is_hot_water_circulation_on);
+    turn_on_action:
+      - lambda: |-
+           id(is_hot_water_circulation_on) = true;
+      - switch.turn_on: relay8
+    turn_off_action:
+      - lambda: |-
+           id(is_hot_water_circulation_on) = false;
