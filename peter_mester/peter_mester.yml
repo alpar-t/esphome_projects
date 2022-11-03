@@ -69,11 +69,12 @@ sensor:
        - 4.76kOhm -> 38.8°C
        - 16.09kOhm -> 14.2°C
     filters:
-      - sliding_window_moving_average:
+      - median:
           window_size: 6
-          send_every: 2
+          send_every: 3
+          send_first_at: 3
     on_value_range:
-      - below: 34.0
+      - below: 36.0
         then:
           - if:
               condition:
@@ -81,7 +82,7 @@ sensor:
                     return id(is_hot_water_circulation_on);
               then:               
                  - switch.turn_on: relay8
-      - above: 39.0
+      - above: 42.0
         then:
           - switch.turn_off: relay8
 
@@ -165,27 +166,43 @@ sensor:
     device_class: temperature
     unit_of_measurement: C
 
+  - platform: homeassistant
+    id: iroda_current_temperature
+    entity_id: sensor.iroda_levego_air_temperature
+  - platform: homeassistant
+    id: konyha_nappali_current_temperature
+    entity_id: sensor.nappali_multisensor_air_temperature 
+  - platform: homeassistant
+    id: lanyok_current_temperature
+    entity_id: sensor.nappali_air_temperature
+  - platform: homeassistant
+    id: halo_current_temperature
+    entity_id: sensor.air_quality_sensor_air_temperature
+  - platform: homeassistant
+    id: jatszo_current_temperature
+    entity_id: sensor.multisensor_nappali_air_temperature
+
 # Four relay outputs, exposed as switches in Home Assistant
 switch:
   - platform: gpio
     pin: GPIO16
-    name: Relay1
+    name: "Iroda Futes"
     id: relay1
   - platform: gpio
     pin: GPIO14
-    name: Relay2
+    name: "Konyha es Nappali Futes"
     id: relay2
   - platform: gpio
     pin: GPIO12
-    name: Relay3
+    name: "Lanyok Futes"
     id: relay3
   - platform: gpio
     pin: GPIO13
-    name: Relay4
+    name: "Halo Futes"
     id: relay4
   - platform: gpio
     pin: GPIO15
-    name: Relay5
+    name: "Jatszo Futes"
     id: relay5
   - platform: gpio
     pin: GPIO00
@@ -208,7 +225,14 @@ switch:
     turn_on_action:
       - lambda: |-
            id(is_hot_water_circulation_on) = true;
-      - switch.turn_on: relay8
     turn_off_action:
       - lambda: |-
            id(is_hot_water_circulation_on) = false;
+      - switch.turn_off: relay8
+
+climate:
+  - !include { file: 'climate.yml', vars: { name: "Iroda Melegites", sensor: "iroda_current_temperature", relay: "relay1" }}
+  - !include { file: 'climate.yml', vars: { name: "Konyha es Nappali Melegites", sensor: "konyha_nappali_current_temperature", relay: "relay2" }}
+  - !include { file: 'climate.yml', vars: { name: "Lanyok Melegites", sensor: "lanyok_current_temperature", relay: "relay3" }}
+  - !include { file: 'climate.yml', vars: { name: "Halo Melegites", sensor: "halo_current_temperature", relay: "relay4" }}
+  - !include { file: 'climate.yml', vars: { name: "Jatszo Melegites", sensor: "jatszo_current_temperature", relay: "relay5" }}
