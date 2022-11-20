@@ -5,7 +5,7 @@ default_target_temperature_low: 22 °C
 visual:
     min_temperature: 16
     max_temperature: 25
-    temperature_step: 0.5
+    temperature_step: 0.1
 min_heating_off_time: 900s
 min_heating_run_time: 1800s
 min_idle_time: 300s
