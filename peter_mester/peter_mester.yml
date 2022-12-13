@@ -82,7 +82,9 @@ sensor:
                     return id(is_hot_water_circulation_on);
               then:               
                  - switch.turn_on: relay8
-      - above: 42.0
+                 - delay: 180s
+                 - switch.turn_off: relay8                
+      - above: 45.0
         then:
           - switch.turn_off: relay8
 
@@ -236,3 +238,19 @@ climate:
   - !include { file: 'climate.yml', vars: { name: "Lanyok Melegites", sensor: "lanyok_current_temperature", relay: "relay3" }}
   - !include { file: 'climate.yml', vars: { name: "Halo Melegites", sensor: "halo_current_temperature", relay: "relay4" }}
   - !include { file: 'climate.yml', vars: { name: "Jatszo Melegites", sensor: "jatszo_current_temperature", relay: "relay5" }}
+  - platform: thermostat
+    name: Melegviz Hofok
+    sensor: water_reserve_temp
+    visual:
+      min_temperature: 40
+      max_temperature: 60
+      temperature_step: 1
+    min_heating_off_time: 120s
+    min_heating_run_time: 1800s
+    min_idle_time: 300s
+    heat_deadband: 20
+    heat_overrun: 2
+    idle_action:
+       - logger.log: "Hot water going idle"
+    heat_action:  
+       - logger.log: "Hot water heating"

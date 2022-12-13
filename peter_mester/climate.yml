@@ -1,7 +1,6 @@
 platform: thermostat
 name: ${name}
 sensor: ${sensor}
-default_target_temperature_low: 22 °C
 visual:
     min_temperature: 16
     max_temperature: 25
