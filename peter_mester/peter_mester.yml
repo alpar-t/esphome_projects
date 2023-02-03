@@ -74,7 +74,11 @@ sensor:
           send_every: 3
           send_first_at: 3
     on_value_range:
-      - below: 36.0
+      - below: 29.0
+        then:
+          - switch.turn_off: relay8
+      - above: 29.0
+        below: 36.0
         then:
           - if:
               condition:
