@@ -3,8 +3,8 @@ esphome:
   platform: ESP8266
   board: esp12e
 
-web_server:
-  port: 80
+#web_server:
+#  port: 80
 
 wifi:
   fast_connect: true
@@ -170,7 +170,7 @@ sensor:
         return id(heating_outgress_temp).state - id(heating_ingress_temp).state;
     update_interval: 10s
     device_class: temperature
-    unit_of_measurement: C
+    unit_of_measurement: °C
 
   - platform: homeassistant
     id: iroda_current_temperature
@@ -245,6 +245,7 @@ climate:
   - platform: thermostat
     name: Melegviz Hofok
     sensor: water_reserve_temp
+    on_boot_restore_from: memory   
     visual:
       min_temperature: 40
       max_temperature: 60
@@ -253,7 +254,7 @@ climate:
     min_heating_run_time: 1800s
     min_idle_time: 300s
     heat_deadband: 10
-    heat_overrun: 5
+    heat_overrun: 0
     idle_action:
        - logger.log: "Hot water going idle"
     heat_action:  

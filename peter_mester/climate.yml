@@ -1,6 +1,7 @@
 platform: thermostat
 name: ${name}
 sensor: ${sensor}
+on_boot_restore_from: memory  
 visual:
     min_temperature: 16
     max_temperature: 25
