@@ -12,8 +12,8 @@ wifi:
 
 api:
 
-web_server:
-   port: 80
+#web_server:
+#   port: 80
 
 ota:
   safe_mode: True
@@ -28,6 +28,12 @@ i2c:
 ads1115:
   - address: 0x48
     continuous_mode: true
+
+globals:
+   - id: water_runtime_min
+     type: int
+     restore_value: no
+     initial_value: '0'
 
 sensor:
  - platform: dht
@@ -55,38 +61,100 @@ sensor:
 #   filters:
 #      - multiply: -1
 #      - offset: -1
-#   accuracy_decimals: 1
+#   accuracy_decimals:
+ - platform: template
+   id: water_runtime
+   unit_of_measurement: "m"
+   accuracy_decimals: 0
+   name: "Time the watter was running"
+   icon: "mdi:watering-can"
+   update_interval: 1min
+   lambda: |-
+     if (id(water_flow).state) id(water_runtime_min)+=1; return id(water_runtime_min);
+   on_value_range:
+     above: 45
+     then:
+       - switch.turn_off: water_flow
   
 # 8 relay outputs, exposed as switches in Home Assistant
 switch:
   - platform: gpio
     pin: GPIO32
     name: "Vetemenyes Csepi"
-    id: relay1
+    id: ontoz_vetemenyes
+    interlock:
+      - ontoz_cserep
+      - ontoz_grup 
+      - ontoz_fu_elol
+      - ontoz_fu_hatul
+    on_turn_on: 
+       - switch.turn_on: water_flow
+    on_turn_off:
+       - switch.turn_off: water_flow
   - platform: gpio
     pin: GPIO33
     name: "Cherep Csepi"
-    id: relay2
+    interlock:
+      - ontoz_vetemenyes
+      - ontoz_grup 
+      - ontoz_fu_elol
+      - ontoz_fu_hatul
+    id: ontoz_cserep
+    on_turn_on: 
+       - switch.turn_on: water_flow
+    on_turn_off:
+       - switch.turn_off: water_flow
   - platform: gpio
     pin: GPIO25
     name: "Grupp csepi"
-    id: relay3
+    id: ontoz_grup
+    interlock:
+      - ontoz_vetemenyes
+      - ontoz_cserep
+      - ontoz_fu_elol
+      - ontoz_fu_hatul
+    on_turn_on: 
+       - switch.turn_on: water_flow
+    on_turn_off:
+       - switch.turn_off: water_flow
   - platform: gpio
     pin: GPIO26
     name: "Fu elol"
-    id: relay4
+    id: ontoz_fu_elol
+    interlock:
+      - ontoz_vetemenyes
+      - ontoz_cserep
+      - ontoz_grup 
+      - ontoz_fu_hatul
+    on_turn_on: 
+       - switch.turn_on: water_flow
+    on_turn_off:
+       - switch.turn_off: water_flow
   - platform: gpio
     pin: GPIO27
     name: "Fu hatul"
-    id: relay5
+    id: ontoz_fu_hatul
+    interlock:
+      - ontoz_vetemenyes
+      - ontoz_cserep
+      - ontoz_grup 
+      - ontoz_fu_elol
+    on_turn_on: 
+       - switch.turn_on: water_flow
+    on_turn_off:
+       - switch.turn_off: water_flow
   - platform: gpio
     pin: GPIO14
     name: "Vezetek Viz Inditas"
-    id: relay6
+    id: ontozes_vezetek
+    interlock:
+      - ontozes_pompa
   - platform: gpio
     pin: GPIO12
     name: "Pompa Viz Inditas"
-    id: relay7
+    id: ontozes_pompa
+    interlock:
+       - ontozes_vezetek
   - platform: gpio
     pin: GPIO13
     name: "Relay8 nincs hasznalatban"
@@ -120,6 +188,7 @@ switch:
                  - switch.turn_on: ontozes_pompa
                else:
                  - switch.turn_on: ontozes_vezetek
-          # This is a failsafe for how long the water will run for max
-          - delay: 45 minutes
+    turn_off_action:
+          - switch.turn_off: ontozes_pompa
+          - switch.turn_off: ontozes_vezetek
           - switch.turn_off: water_flow
