@@ -1,0 +1,125 @@
+esphome:
+  name: pia_mester
+  platform: ESP32
+  board: esp32dev
+
+logger:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  power_save_mode: none  
+
+api:
+
+web_server:
+   port: 80
+
+ota:
+  safe_mode: True
+  password: !secret ota_password
+ 
+i2c:
+  - id: bus_a
+    sda: 21
+    scl: 22
+    scan: true
+
+ads1115:
+  - address: 0x48
+    continuous_mode: true
+
+sensor:
+ - platform: dht
+   pin: GPIO4
+   temperature:
+     name: "Pince Temperature"
+   humidity:
+     name: "Pince Humidity"
+   model: AM2302
+   update_interval: 30s
+# - platform: ads1115
+#   multiplexer: 'A0_GND'
+#   id: voltage_sensor_0
+#   name: "Viz Tartaly Szint"
+#   gain: 6.144
+#   update_interval: 3s
+#   accuracy_decimals: 1
+# - platform: ads1115
+#   multiplexer: 'A1_GND'
+#   id: voltage_sensor_1
+#   # TODO: AC to DC , Ez tulfolyo pompa lesz a proba utan
+#   name: "Urito pompa aram eroseg"
+#   gain: 1.024
+#   update_interval: 3s
+#   filters:
+#      - multiply: -1
+#      - offset: -1
+#   accuracy_decimals: 1
+  
+# 8 relay outputs, exposed as switches in Home Assistant
+switch:
+  - platform: gpio
+    pin: GPIO32
+    name: "Vetemenyes Csepi"
+    id: relay1
+  - platform: gpio
+    pin: GPIO33
+    name: "Cherep Csepi"
+    id: relay2
+  - platform: gpio
+    pin: GPIO25
+    name: "Grupp csepi"
+    id: relay3
+  - platform: gpio
+    pin: GPIO26
+    name: "Fu elol"
+    id: relay4
+  - platform: gpio
+    pin: GPIO27
+    name: "Fu hatul"
+    id: relay5
+  - platform: gpio
+    pin: GPIO14
+    name: "Vezetek Viz Inditas"
+    id: relay6
+  - platform: gpio
+    pin: GPIO12
+    name: "Pompa Viz Inditas"
+    id: relay7
+  - platform: gpio
+    pin: GPIO13
+    name: "Relay8 nincs hasznalatban"
+    id: relay8
+  - platform: gpio
+    pin: GPIO18
+    name: "Urito Pompa"
+    id: relayA1
+    inverted: true 
+  - platform: gpio
+    pin: GPIO19
+    name: "Pince Ajto"
+    id: relayA2
+    inverted: true 
+  - platform: template
+    id: use_tank
+    optimistic: true 
+    icon: "mdi:water-pump"
+    name: "Van viz a tartalyban?"
+  - platform: template
+    id: water_flow
+    icon: "mdi:water-pump"
+    name: "Viz inditasa"
+    optimistic: true
+    turn_on_action:
+       then:  
+          - if:
+               condition:
+                 - switch.is_on: use_tank
+               then:
+                 - switch.turn_on: ontozes_pompa
+               else:
+                 - switch.turn_on: ontozes_vezetek
+          # This is a failsafe for how long the water will run for max
+          - delay: 45 minutes
+          - switch.turn_off: water_flow
