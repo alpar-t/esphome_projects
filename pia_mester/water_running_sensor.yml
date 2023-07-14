@@ -1,0 +1,14 @@
+#- !include { file: 'water_running_sensor.yml', vars: { name: "Water running", id: "water_runtime", follow: "water_flow" }}
+platform: template
+id: ${id}
+unit_of_measurement: "m"
+accuracy_decimals: 0
+name: ${name}
+icon: "mdi:watering-can"
+update_interval: 1min
+lambda: |-
+  if (id(${follow}).state) { id(${id}_min)+=1 ; } else { id(${id}_min) = 0 ; } return id(${id}_min);
+on_value_range:
+  above: 45
+  then:
+    - switch.turn_off: ${follow}

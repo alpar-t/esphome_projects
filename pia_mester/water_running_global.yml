@@ -1,0 +1,4 @@
+id: ${for}_min
+type: int
+restore_value: no
+initial_value: '0'

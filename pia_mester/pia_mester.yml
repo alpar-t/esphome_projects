@@ -29,10 +29,12 @@ ota:
 #    continuous_mode: true
 #
 globals:
-   - id: water_runtime_min
-     type: int
-     restore_value: no
-     initial_value: '0'
+   - !include { file: 'water_running_global.yml', vars: { for: "water_runtime" }}
+   - !include { file: 'water_running_global.yml', vars: { for: "water_runtime_fu_elol" }}
+   - !include { file: 'water_running_global.yml', vars: { for: "water_runtime_fu_hatul" }}
+   - !include { file: 'water_running_global.yml', vars: { for: "water_runtime_gruppok" }}
+   - !include { file: 'water_running_global.yml', vars: { for: "water_runtime_cserep" }}
+   - !include { file: 'water_running_global.yml', vars: { for: "water_runtime_vetemenyes" }}
 
 sensor:
  - platform: dht
@@ -61,19 +63,12 @@ sensor:
 ##      - multiply: -1
 ##      - offset: -1
 ##   accuracy_decimals:
- - platform: template
-   id: water_runtime
-   unit_of_measurement: "m"
-   accuracy_decimals: 0
-   name: "Time the watter was running"
-   icon: "mdi:watering-can"
-   update_interval: 1min
-   lambda: |-
-     if (id(water_flow).state) id(water_runtime_min)+=1; return id(water_runtime_min);
-   on_value_range:
-     above: 45
-     then:
-        - switch.turn_off: water_flow
+ - !include { file: 'water_running_sensor.yml', vars: { name: "Water running", id: "water_runtime", follow: "water_flow" }}
+ - !include { file: 'water_running_sensor.yml', vars: { name: "Water running Fu Elol", id: "water_runtime_fu_elol", follow: "ontoz_fu_hatul" }}
+ - !include { file: 'water_running_sensor.yml', vars: { name: "Water running Fu hatul", id: "water_runtime_fu_hatul", follow: "ontoz_fu_elol" }}
+ - !include { file: 'water_running_sensor.yml', vars: { name: "Water running Gruppok", id: "water_runtime_gruppok", follow: "ontoz_grup" }}
+ - !include { file: 'water_running_sensor.yml', vars: { name: "Water running Cserep", id: "water_runtime_cserep", follow: "ontoz_cserep" }}
+ - !include { file: 'water_running_sensor.yml', vars: { name: "Water running Vetemenyes", id: "water_runtime_vetemenyes", follow: "ontoz_vetemenyes" }}
   
 # 8 relay outputs, exposed as switches in Home Assistant
 switch:
@@ -118,19 +113,6 @@ switch:
        - switch.turn_off: water_flow
   - platform: gpio
     pin: GPIO26
-    name: "Fu elol"
-    id: ontoz_fu_elol
-    interlock:
-      - ontoz_vetemenyes
-      - ontoz_cserep
-      - ontoz_grup 
-      - ontoz_fu_hatul
-    on_turn_on: 
-       - switch.turn_on: water_flow
-    on_turn_off:
-       - switch.turn_off: water_flow
-  - platform: gpio
-    pin: GPIO27
     name: "Fu hatul"
     id: ontoz_fu_hatul
     interlock:
@@ -138,6 +120,19 @@ switch:
       - ontoz_cserep
       - ontoz_grup 
       - ontoz_fu_elol
+    on_turn_on: 
+       - switch.turn_on: water_flow
+    on_turn_off:
+       - switch.turn_off: water_flow
+  - platform: gpio
+    pin: GPIO27
+    name: "Fu elol"
+    id: ontoz_fu_elol
+    interlock:
+      - ontoz_vetemenyes
+      - ontoz_cserep
+      - ontoz_grup 
+      - ontoz_fu_hatul
     on_turn_on: 
        - switch.turn_on: water_flow
     on_turn_off:
@@ -190,5 +185,3 @@ switch:
     turn_off_action:
           - switch.turn_off: ontozes_pompa
           - switch.turn_off: ontozes_vezetek
-          - lambda: |-
-              id(water_runtime_min) = 0;
