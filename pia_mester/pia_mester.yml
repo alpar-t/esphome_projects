@@ -64,8 +64,8 @@ sensor:
 ##      - offset: -1
 ##   accuracy_decimals:
  - !include { file: 'water_running_sensor.yml', vars: { name: "Water running", id: "water_runtime", follow: "water_flow" }}
- - !include { file: 'water_running_sensor.yml', vars: { name: "Water running Fu Elol", id: "water_runtime_fu_elol", follow: "ontoz_fu_hatul" }}
- - !include { file: 'water_running_sensor.yml', vars: { name: "Water running Fu hatul", id: "water_runtime_fu_hatul", follow: "ontoz_fu_elol" }}
+ - !include { file: 'water_running_sensor.yml', vars: { name: "Water running Fu Elol", id: "water_runtime_fu_elol", follow: "ontoz_fu_elol" }}
+ - !include { file: 'water_running_sensor.yml', vars: { name: "Water running Fu hatul", id: "water_runtime_fu_hatul", follow: "ontoz_fu_hatul" }}
  - !include { file: 'water_running_sensor.yml', vars: { name: "Water running Gruppok", id: "water_runtime_gruppok", follow: "ontoz_grup" }}
  - !include { file: 'water_running_sensor.yml', vars: { name: "Water running Cserep", id: "water_runtime_cserep", follow: "ontoz_cserep" }}
  - !include { file: 'water_running_sensor.yml', vars: { name: "Water running Vetemenyes", id: "water_runtime_vetemenyes", follow: "ontoz_vetemenyes" }}
@@ -113,19 +113,6 @@ switch:
        - switch.turn_off: water_flow
   - platform: gpio
     pin: GPIO26
-    name: "Fu hatul"
-    id: ontoz_fu_hatul
-    interlock:
-      - ontoz_vetemenyes
-      - ontoz_cserep
-      - ontoz_grup 
-      - ontoz_fu_elol
-    on_turn_on: 
-       - switch.turn_on: water_flow
-    on_turn_off:
-       - switch.turn_off: water_flow
-  - platform: gpio
-    pin: GPIO27
     name: "Fu elol"
     id: ontoz_fu_elol
     interlock:
@@ -133,6 +120,19 @@ switch:
       - ontoz_cserep
       - ontoz_grup 
       - ontoz_fu_hatul
+    on_turn_on: 
+       - switch.turn_on: water_flow
+    on_turn_off:
+       - switch.turn_off: water_flow
+  - platform: gpio
+    pin: GPIO27
+    name: "Fu hatul"
+    id: ontoz_fu_hatul
+    interlock:
+      - ontoz_vetemenyes
+      - ontoz_cserep
+      - ontoz_grup 
+      - ontoz_fu_elol
     on_turn_on: 
        - switch.turn_on: water_flow
     on_turn_off:
