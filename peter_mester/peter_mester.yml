@@ -74,11 +74,11 @@ sensor:
           send_every: 3
           send_first_at: 3
     on_value_range:
-      - below: 29.0
+      - below: 25.0
         then:
           - switch.turn_off: relay8
-      - above: 29.0
-        below: 36.0
+      - above: 25.0
+        below: 38.0
         then:
           - if:
               condition:
@@ -88,7 +88,7 @@ sensor:
                  - switch.turn_on: relay8
                  - delay: 180s
                  - switch.turn_off: relay8                
-      - above: 45.0
+      - above: 41.0
         then:
           - switch.turn_off: relay8
 
@@ -104,8 +104,8 @@ sensor:
     reference_voltage: 5
     id: resistance_sensor_1
   - platform: ntc
-    sensor: resistance_sensor_1
-    name: "Heating Outgress Temp"
+    sensor: resistance_sensor_3
+    name: "Hot Watter Mixing Temperature"
     id: heating_outgress_temp
     calibration:
        - 10.0kOhm -> 25°C
@@ -129,7 +129,7 @@ sensor:
     id: resistance_sensor_2
   - platform: ntc
     sensor: resistance_sensor_2
-    name: "Heating Ingress"
+    name: "Hot Watter Upper Half Temperature"
     id: heating_ingress_temp
     calibration:
        - 10.0kOhm -> 25°C
@@ -139,6 +139,15 @@ sensor:
       - sliding_window_moving_average:
           window_size: 6
           send_every: 2
+  
+  - platform: template
+    name: "Hot Water Delta Between top and middle"
+    lambda: |-
+        return id(heating_ingress_temp).state - id(water_reserve_temp).state;
+    update_interval: 10s
+    device_class: temperature
+    unit_of_measurement: °C
+
 
   - platform: ads1115
     multiplexer: 'A3_GND'
@@ -152,7 +161,7 @@ sensor:
     reference_voltage: 5
     id: resistance_sensor_3
   - platform: ntc
-    sensor: resistance_sensor_3
+    sensor: resistance_sensor_1
     name: "Hot water reserve"
     id: water_reserve_temp
     calibration:
@@ -163,14 +172,6 @@ sensor:
       - sliding_window_moving_average:
           window_size: 6
           send_every: 2
-
-  - platform: template
-    name: "Heating Water Delta Temp"
-    lambda: |-
-        return id(heating_outgress_temp).state - id(heating_ingress_temp).state;
-    update_interval: 10s
-    device_class: temperature
-    unit_of_measurement: °C
 
   - platform: homeassistant
     id: iroda_current_temperature
@@ -249,12 +250,12 @@ climate:
     visual:
       min_temperature: 40
       max_temperature: 60
-      temperature_step: 1
+      temperature_step: 2
     min_heating_off_time: 120s
-    min_heating_run_time: 1800s
+    min_heating_run_time: 180s
     min_idle_time: 300s
-    heat_deadband: 10
-    heat_overrun: 0
+    heat_deadband: 2
+    heat_overrun: 7
     idle_action:
        - logger.log: "Hot water going idle"
     heat_action:  
