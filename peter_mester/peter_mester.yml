@@ -74,10 +74,10 @@ sensor:
           send_every: 3
           send_first_at: 3
     on_value_range:
-      - below: 25.0
+      - below: 23.0
         then:
           - switch.turn_off: relay8
-      - above: 25.0
+      - above: 23.0
         below: 38.0
         then:
           - if:
@@ -86,8 +86,6 @@ sensor:
                     return id(is_hot_water_circulation_on);
               then:               
                  - switch.turn_on: relay8
-                 - delay: 180s
-                 - switch.turn_off: relay8                
       - above: 41.0
         then:
           - switch.turn_off: relay8
@@ -248,14 +246,15 @@ climate:
     sensor: water_reserve_temp
     on_boot_restore_from: memory   
     visual:
-      min_temperature: 40
-      max_temperature: 60
+      # Boiler can heat up to 60, mixing  temperature is just above 40 so we have to be at at least that 
+      min_temperature: 52
+      max_temperature: 58
       temperature_step: 2
     min_heating_off_time: 120s
     min_heating_run_time: 180s
     min_idle_time: 300s
-    heat_deadband: 2
-    heat_overrun: 7
+    heat_deadband: 10
+    heat_overrun: 2
     idle_action:
        - logger.log: "Hot water going idle"
     heat_action:  
