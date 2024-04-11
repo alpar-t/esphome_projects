@@ -247,13 +247,13 @@ climate:
     on_boot_restore_from: memory   
     visual:
       # Boiler can heat up to 60, mixing  temperature is just above 40 so we have to be at at least that 
-      min_temperature: 52
+      min_temperature: 44
       max_temperature: 58
       temperature_step: 2
     min_heating_off_time: 120s
     min_heating_run_time: 180s
     min_idle_time: 300s
-    heat_deadband: 10
+    heat_deadband: 2
     heat_overrun: 2
     idle_action:
        - logger.log: "Hot water going idle"
